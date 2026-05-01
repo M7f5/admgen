@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admission Note Generator v.1.0 for CAD</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --panel: #242424;
+            --panel-2: #303030;
+            --text: #f2f2f2;
+            --muted: #bdbdbd;
+            --border: #555;
+            --accent: #fff;
+            --yes: #d9534f;
+            --no: #2e9e55;
+            --blue: #3b82f6;
+            --highlight: #fff3a3;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.45;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 1800px;
+            height: 100vh;
+            margin: 0 auto;
+            padding: 20px 16px 16px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0 0 12px;
+            letter-spacing: .3px;
+        }
+
+        h1 {
+            font-size: 28px;
+        }
+
+        h2 {
+            font-size: 15px;
+            text-transform: uppercase;
+            margin-top: 28px;
+        }
+
+        h3 {
+            font-size: 14px;
+        }
+
+        .subtext,
+        .hint {
+            color: var(--muted);
+        }
+
+        .hint {
+            font-size: 12px;
+        }
+
+        .app-layout {
+            display: grid;
+            grid-template-columns: minmax(560px, 1fr) minmax(560px, 1fr);
+            gap: 16px;
+            align-items: stretch;
+            min-width: 1140px;
+            height: calc(100vh - 92px);
+        }
+
+        .control-panel {
+            min-width: 0;
+            height: 100%;
+            overflow-y: auto;
+            padding-right: 8px;
+            scrollbar-gutter: stable;
+        }
+
+        .result-panel {
+            min-width: 0;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 800px) {
+
+            .grid,
+            .grid-2,
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            margin: 10px 0 6px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--panel-2);
+            color: var(--text);
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 84px;
+            resize: vertical;
+        }
+
+        .large-textarea {
+            min-height: 240px;
+        }
+
+        .disease-textarea {
+            min-height: 150px;
+        }
+
+        .paragraph-control {
+            min-height: 58px;
+            line-height: 1.45;
+        }
+
+        .section {
+            border: 1px solid var(--border);
+            background: var(--panel);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+
+        button {
+            border: 2px solid var(--accent);
+            color: var(--text);
+            background: transparent;
+            border-radius: 8px;
+            padding: 9px 14px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, .1);
+        }
+
+        .small-btn {
+            padding: 7px 10px;
+            font-size: 12px;
+            min-width: 38px;
+        }
+
+        .risk-item,
+        .phrase-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            background: #202020;
+        }
+
+        .risk-buttons,
+        .choice-buttons {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .phrase-zone {
+            margin-top: 12px;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+        }
+
+        .phrase-card {
+            margin-bottom: 8px;
+        }
+
+        .phrase-text {
+            font-size: 13px;
+            margin-bottom: 8px;
+            white-space: pre-wrap;
+        }
+
+        .phrase-card button,
+        .paragraph-button {
+            border-color: #8a8a8a;
+            color: #e8e8e8;
+            font-size: 12px;
+            padding: 8px 10px;
+        }
+
+        .paragraph-button {
+            width: 100%;
+            text-align: left;
+            white-space: normal;
+            line-height: 1.45;
+            margin-bottom: 8px;
+        }
+
+        .paragraph-button small {
+            display: block;
+            color: var(--muted);
+            font-weight: 500;
+            margin: 0 0 5px;
+        }
+
+        .yes-selected {
+            background: var(--yes);
+            border-color: var(--yes);
+            color: #fff;
+        }
+
+        .no-selected {
+            background: var(--no);
+            border-color: var(--no);
+            color: #fff;
+        }
+
+        .choice-selected {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: #fff;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .score-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #17406f;
+            color: #dbeafe;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .inline-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .inline-check input {
+            width: auto;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+            border-top: 1px solid #d8d8b0;
+            padding-top: 18px;
+        }
+
+        .output {
+            white-space: pre-wrap;
+            background: #111;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            font-family: "Times New Roman", serif;
+            font-size: 16px;
+            outline: none;
+            scrollbar-gutter: stable;
+        }
+
+        .output:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, .25);
+        }
+
+        .output strong,
+        .output .manual-edit {
+            color: var(--highlight);
+            font-weight: 800;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Admission Note Generator v.1.0 for CAD</h1>
+        <div class="subtext">Left panel controls update the note. Admission Note Result stays on the right and is
+            editable.</div>
+
+        <div class="app-layout">
+            <div class="control-panel">
+                <h2>Writer</h2>
+                <div class="section grid-2">
+                    <div><label>Taken by</label><textarea id="writer" class="paragraph-control">M6</textarea></div>
+                    <div><label>Admission reason / procedure</label><textarea id="admissionReason"
+                            class="paragraph-control">CAG +/- PCI</textarea>
+                        <div id="procedureChoices" class="choice-buttons"></div>
+                    </div>
+                </div>
+
+                <h2>Basic Admission Information</h2>
+                <div class="section grid-2">
+                    <div><label>Informant</label><textarea id="informant"
+                            class="paragraph-control">the patient and the past medical records</textarea>
+                        <div id="informantChoices" class="choice-buttons"></div>
+                    </div>
+                    <div><label>Chief complaint</label><textarea id="chiefComplaint"
+                            class="paragraph-control">chest pain, chest tightness for 3 months, for CAG +/- PCI</textarea>
+                        <div id="chiefComplaintChoices" class="choice-buttons"></div>
+                    </div>
+                </div>
+
+                <h2>Patient Demographics</h2>
+                <div class="section grid-4">
+                    <div><label>Age</label><input id="age" type="number" value="61"></div>
+                    <div><label>Sex</label><select id="sex">
+                            <option value="male" selected>male</option>
+                            <option value="female">female</option>
+                        </select></div>
+                    <div><label>IADL/ADL</label><select id="iadl">
+                            <option value="independent" selected>independent</option>
+                            <option value="partially dependent">partially dependent</option>
+                            <option value="dependent">dependent</option>
+                        </select></div>
+                    <div><label>Admission date</label><textarea id="admissionDate" class="paragraph-control"
+                            placeholder="yyyy/mm/dd"></textarea></div>
+                </div>
+
+                <h2>Active Disease</h2>
+                <div class="section">
+                    <div class="hint">Paragraph style. Default blank.</div><textarea id="activeDiseaseText"
+                        class="disease-textarea" placeholder="Type active diseases..."></textarea>
+                    <div class="phrase-zone">
+                        <div class="hint">Disease phrases</div>
+                        <div id="activePhraseBank"></div>
+                    </div>
+                </div>
+
+                <h2>Underlying Disease</h2>
+                <div class="section">
+                    <div class="hint">Paragraph style. Default blank.</div><textarea id="underlyingDiseaseText"
+                        class="disease-textarea" placeholder="Type underlying diseases..."></textarea>
+                    <div class="phrase-zone">
+                        <div class="hint">Disease phrases</div>
+                        <div id="underlyingPhraseBank"></div>
+                    </div>
+                </div>
+
+                <h2>Present Illness Narrative</h2>
+                <div class="section"><label>Story paragraph</label><textarea id="piStory" class="large-textarea"
+                        rows="10"></textarea></div>
+
+                <h2>Reference Phrase Builder</h2>
+                <div class="section">
+                    <div class="hint">Click a paragraph preview to append it into Present Illness Narrative.</div>
+                    <div class="grid-2">
+                        <div><label>Hospital name for referral phrase</label><textarea id="hospitalName"
+                                class="paragraph-control">NTUH</textarea></div>
+                    </div>
+                    <div id="referencePhraseButtons" class="phrase-zone"></div>
+                </div>
+
+                <div id="cagWorkupSection" class="section hidden">
+                    <h3>CAD Pre-admission Check-up Result Console</h3>
+                    <div class="hint">Multiple lines become semicolon-separated in the generated phrase.</div>
+                    <div class="grid">
+                        <div class="risk-item"><label class="inline-check"><input type="checkbox" id="includeTreadmill">
+                                Treadmill test result</label><textarea id="treadmillResult"></textarea><label>Treadmill
+                                test date</label><textarea id="treadmillDate" class="paragraph-control"
+                                placeholder="yyyy/mm/dd"></textarea></div>
+                        <div class="risk-item"><label class="inline-check"><input type="checkbox" id="includeEcho">
+                                Echocardiography result</label><textarea
+                                id="echoResult"></textarea><label>Echocardiography date</label><textarea id="echoDate"
+                                class="paragraph-control" placeholder="yyyy/mm/dd"></textarea></div>
+                        <div class="risk-item"><label class="inline-check"><input type="checkbox"
+                                    id="includeCoronaryCTA"> Coronary CT angiography</label><textarea
+                                id="coronaryCTAResult"></textarea><label>Coronary CT angiography date</label><textarea
+                                id="coronaryCTADate" class="paragraph-control" placeholder="yyyy/mm/dd"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <h2>Optional Scoring Systems — Check to Include</h2>
+                <div id="scoreSystems"></div>
+
+                <h2>Past Surgical and Hospitalization History</h2>
+                <div class="section grid-2">
+                    <div><label>Past Surgical history</label><textarea
+                            id="surgicalHistory">- appendectomy in 2006</textarea></div>
+                    <div><label>Hospitalization</label><textarea id="hospitalization"></textarea></div>
+                </div>
+
+                <h2>Current Medication</h2>
+                <div class="section grid-2">
+                    <div><label>台大醫院</label><textarea id="medNtuh">Lasix 40 mg/tab 1 tab QD PO 28 days
+Aldactone 25 mg/tab 0.5 tab QD PO 28 days
+5康肯 Concor 5 mg/tab 0.5 tab QD PO 28 days
+Eliquis 5 mg/tab 1 tab BID PO 28 days
+Cordarone 200 mg/tab 1 tab QD PO 28 days</textarea></div>
+                    <div><label>Other</label><textarea id="medOther">nil</textarea></div>
+                    <div><label>中草藥</label><textarea id="herb">nil</textarea></div>
+                    <div><label>保健食品</label><textarea id="supplement">nil</textarea></div>
+                </div>
+
+                <h2>Allergy</h2>
+                <div class="section grid-2">
+                    <div><label>Medication allergy</label><textarea
+                            id="drugAllergy">Iopromide (Ultravist 370 76.9% 200 mL/btl 常備藥) 【Skin Rash(皮膚疹)】 本院醫事人員確認 發生日期:2026/02/23</textarea>
+                    </div>
+                    <div><label>Food allergy</label><textarea id="foodAllergy">nil</textarea></div>
+                    <div><label>Medical device ADR</label><textarea id="deviceAdr">nil</textarea></div>
+                </div>
+
+                <h2>Personal and Social History</h2>
+                <div class="section grid-2">
+                    <div>
+                        <h3>Habit</h3><label>Alcohol</label><textarea id="alcohol"
+                            class="paragraph-control">occasionally</textarea><label>Betel nuts</label><textarea
+                            id="betel" class="paragraph-control">denied</textarea><label>Cigarette</label><textarea
+                            id="cigarette"
+                            class="paragraph-control">0.5 pack per day, for 30 years, quitted for 3 months</textarea><label>Other</label><textarea
+                            id="habitOther" class="paragraph-control">nil</textarea>
+                    </div>
+                    <div>
+                        <h3>TOCC</h3><label>Travel history in recent 3 months</label><textarea id="travel"
+                            class="paragraph-control">Japan</textarea><label>Occupation</label><textarea id="occupation"
+                            class="paragraph-control">retired, previously as 業務</textarea><label>Contact
+                            history</label><textarea id="contact"
+                            class="paragraph-control">denied contact with people with flu-like symptoms</textarea><label>Cluster
+                            history</label><textarea id="cluster"
+                            class="paragraph-control">no similar symptoms in the patient's family</textarea>
+                    </div>
+                </div>
+
+                <h2>Family History</h2>
+                <div class="section grid-2" id="familyGrid"></div>
+            </div>
+
+            <div class="result-panel">
+                <h2>Admission Note Result</h2>
+                <div class="actions"><button type="button" id="generateBtn">Generate note</button><button type="button"
+                        id="copyBtn">Copy</button><button type="button" id="downloadBtn">Download .txt</button><button
+                        type="button" id="resetBtn">Reset sample</button></div>
+                <div class="hint" style="margin:8px 0 10px">Editable result. Copy and Download use the edited text.
+                </div>
+                <div id="output" class="output" contenteditable="true" spellcheck="false"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            "use strict";
+            const NL = String.fromCharCode(10);
+            const DEFAULT_TREADMILL = "Stress test with evidences indicating ischemia";
+            const DEFAULT_ECHO = ["Normal RA/RV size", "Good LV contractility", "Mitral regurgitation, mild", "Tricuspid regurgitation, mild", "LVEF = 60.1 %"].join(NL);
+            const DEFAULT_CCTA = ["Agatston score: 758.53 (Extensive atherosclerotic plaque burden)", "Coronary artery: Coronary atherosclerosis with severe (70%-99%) stenosis in left anterior descending artery, left circumflex artery and right coronary artery.", "Ventricular function: Normal.", "CAD-RADS: 4"].join(NL);
+            const CAD_SYMPTOM_PHRASE = "The patient, who was under well-controlled hyperuricemia and hyperlipidemia, had been in his usual state of health until 2026/03/23, when he noticed mild chest tightness and chest pain with radiation to the left shoulder and chin occurring when climbing mountain. The pain lasted for less than 10 minutes, and was resolved after resting. According to the patient, the pain may be elicited during rigorous exercise, including jogging, but not climbing stairs or doing chores. During episodes, no nausea, vomiting or syncope was noted.";
+            const CAD_MEDICATION_PHRASE = "Due to coronary artery disease, Bokey and Concor were initiated, and Ezetrol was added for hyperlipidemia control. Coronary angiography (CAG) was discussed.";
+            const CONSENT_PHRASE = "The indication, risks, benefits, and potential complications of the procedure were explained in detail to the patient. He understood and agreed to receive the operation.";
+            const ON_ADMISSION_PHRASE = "On admission, no chest pain, chest tightness, or dyspnea was noted during this evaluation.";
+            const PHYSICAL_EXAM_PHRASE = "Physical examination showed normal heart and breath sounds, pink conjunctiva and no pitting edema.";
+            const diseasePhrases = ["#. Coronary artery disease, with severe (70%-99%) stenosis in left anterior descending artery, left circumflex artery and right coronary artery, under Bokey, Sigmart", "#. Hypertension, under", "#. Dyslipidemia, under", "#. Diabetes mellitus, recent HbA1c = %, under", "#. Gout, recent UA = , under"];
+            const procedureOptions = ["CAG +/- PCI", "Pulsed Field Ablation (PFA) for atrial fibrillation", "other"];
+            const informantOptions = ["the patient and the past medical records", "other"];
+            const familyItems = [["Hypertension", ""], ["Dyslipidemia", ""], ["DM", ""], ["Stroke", ""], ["ACS", ""], ["Malignancy", ""], ["Arrhythmia", ""], ["Sudden death", ""], ["Other", ""]];
+            const familyPhraseOptions = ["mother", "father", "brother", "sister"];
+            const scoringSystems = {
+                cvRisk: { title: "CV Risk Factors", include: true, type: "binary", scoreLabel: null, items: [["Male", 0, "Male"], ["Age male 45/female 55", 0, "Age male 45/female 55"], ["Dyslipidemia", 0, "dyslipidemia"], ["DM", 0, "DM"], ["HTN", 0, "HTN"], ["Smoking", 0, "smoking"], ["BMI > 30", 0, "BMI>30"], ["Family CV history male 55/female 65", 0, "family CV history male 55/female 65"], ["Gout", 0, "gout"]] },
+                cha: { title: "CHA₂DS₂-VA score", include: true, type: "binary", scoreLabel: "Score", items: [["CHF history", 1], ["Hypertension history", 1], ["Age ≥ 75", 2], ["Diabetes history", 1], ["Stroke/TIA/thromboembolism history", 2], ["Vascular disease history", 1], ["Age 65–74", 1]] },
+                hasbled: { title: "HAS-BLED score", include: false, type: "binary", scoreLabel: "Score", items: [["Hypertension", 1], ["Abnormal renal function", 1], ["Abnormal liver function", 1], ["Stroke history", 1], ["Bleeding history or predisposition", 1], ["Labile INR", 1], ["Elderly age > 65", 1], ["Drugs predisposing to bleeding", 1], ["Alcohol use", 1]] },
+                timi: { title: "TIMI score", include: false, type: "binary", scoreLabel: "Score", items: [["Age ≥ 65", 1], ["≥ 3 CAD risk factors", 1], ["Known CAD with stenosis ≥ 50%", 1], ["Aspirin use within 7 days", 1], ["Severe angina ≥ 2 episodes within 24 hours", 1], ["ST deviation ≥ 0.5 mm", 1], ["Positive cardiac marker", 1]] },
+                nyha: { title: "NYHA grading", include: false, type: "choice", scoreLabel: "Class", choices: ["I", "II", "III", "IV"], descriptions: { I: "No limitation of physical activity", II: "Slight limitation of physical activity", III: "Marked limitation of physical activity", IV: "Symptoms at rest" } },
+                accaha: { title: "AHA/ACC grading", include: false, type: "choice", scoreLabel: "Stage", choices: ["A", "B", "C", "D"], descriptions: { A: "At risk for heart failure", B: "Pre-heart failure / structural heart disease without symptoms", C: "Structural heart disease with current or previous symptoms", D: "Advanced heart failure" } }
+            };
+            const state = { scores: {}, family: {}, procedure: "CAG +/- PCI", informant: "the patient and the past medical records", chiefComplaint: "other", lastModified: null, isRendering: false, syncingFromRight: false };
+
+            function el(id) { return document.getElementById(id) }
+            function value(id) { const node = el(id); return node && "value" in node ? String(node.value).trim() : "" }
+            function checked(id) { const node = el(id); return Boolean(node && node.checked) }
+            function lines(text) { return String(text || "").split(NL).map(x => x.trim()).filter(Boolean) }
+            function escapeHtml(str) { return String(str || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;") }
+            function todayText() { const d = new Date(); return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}` }
+            function previewText(text, max = 160) { const compact = String(text || "").split(NL).join(" ").replace(/\s+/g, " ").trim(); return compact.length > max ? compact.slice(0, max).trim() + "..." : compact }
+            function appendParagraph(id, text, key) { const node = el(id); if (!node) return; const current = value(id); node.value = current ? `${current}${NL}${NL}${text}` : text; state.lastModified = key; generateNote() }
+
+            function initScoreState() { Object.entries(scoringSystems).forEach(([key, sys]) => { if (!state.scores[key]) state.scores[key] = { include: sys.include, items: {}, choice: "" }; if (sys.type === "binary") sys.items.forEach(item => { if (state.scores[key].items[item[0]] === undefined) state.scores[key].items[item[0]] = false }) }) }
+            function scoreValue(key) { const sys = scoringSystems[key]; if (!sys || sys.type !== "binary") return ""; return sys.items.reduce((sum, item) => sum + (state.scores[key].items[item[0]] ? item[1] : 0), 0) }
+            function setAuto(systemKey, label, on) { if (state.scores[systemKey] && state.scores[systemKey].items && state.scores[systemKey].items[label] !== undefined) state.scores[systemKey].items[label] = on }
+            function applyDemographicAutoFactors() { initScoreState(); const age = Number(value("age")); const ok = Number.isFinite(age); const sex = value("sex"); const male = sex === "male", female = sex === "female"; setAuto("cvRisk", "Male", male); setAuto("cvRisk", "Age male 45/female 55", ok && ((male && age >= 45) || (female && age >= 55))); setAuto("cha", "Age ≥ 75", ok && age >= 75); setAuto("cha", "Age 65–74", ok && age >= 65 && age <= 74); setAuto("hasbled", "Elderly age > 65", ok && age > 65); setAuto("timi", "Age ≥ 65", ok && age >= 65) }
+            function setScoreInclude(key, on) { state.scores[key].include = on; state.lastModified = "scores"; renderScores(); generateNote() }
+            function setBinaryScore(key, label, on) { state.scores[key].items[label] = on; state.lastModified = "scores"; renderScores(); generateNote() }
+            function setChoiceScore(key, choice) { state.scores[key].choice = choice; state.lastModified = "scores"; renderScores(); generateNote() }
+
+            function updateProcedureConditional() { const section = el("cagWorkupSection"); if (section) section.classList.toggle("hidden", value("admissionReason") !== "CAG +/- PCI") }
+            function renderChoiceButtons(containerId, options, stateKey, inputId) { const box = el(containerId); if (!box) return; box.innerHTML = ""; options.forEach(option => { const b = document.createElement("button"); b.type = "button"; b.className = `small-btn ${state[stateKey] === option ? "choice-selected" : ""}`; b.textContent = option; b.addEventListener("click", () => { state[stateKey] = option; if (option !== "other") el(inputId).value = option; else el(inputId).focus(); state.lastModified = inputId; updateProcedureConditional(); renderAllChoiceButtons(); generateNote() }); box.appendChild(b) }) }
+            function renderAllChoiceButtons() { renderChoiceButtons("procedureChoices", procedureOptions, "procedure", "admissionReason"); renderChoiceButtons("informantChoices", informantOptions, "informant", "informant"); renderChoiceButtons("chiefComplaintChoices", ["other"], "chiefComplaint", "chiefComplaint") }
+            function renderDiseasePhraseButtons(containerId, targetId, key) { const c = el(containerId); if (!c) return; c.innerHTML = ""; diseasePhrases.forEach(phrase => { const card = document.createElement("div"); card.className = "phrase-card"; const t = document.createElement("div"); t.className = "phrase-text"; t.textContent = phrase; const b = document.createElement("button"); b.type = "button"; b.textContent = targetId === "activeDiseaseText" ? "Add to Active" : "Add to Underlying"; b.addEventListener("click", () => appendParagraph(targetId, phrase, key)); card.append(t, b); c.appendChild(card) }) }
+
+            function sentenceDate(d) { return d ? ` on ${d}` : "" }
+            function normalizeResultLines(text) { return lines(text).join("; ").replace(/\s+/g, " ").trim().replace(/[.;\s]+$/g, "") }
+            function resultSentence(text) { const s = normalizeResultLines(text); return s ? `${s}.` : "" }
+            function buildCadCheckupPhrase() { const parts = []; if (checked("includeTreadmill") && value("treadmillResult")) parts.push(`Treadmill test performed${sentenceDate(value("treadmillDate"))} showed ${resultSentence(value("treadmillResult"))}`); if (checked("includeEcho") && value("echoResult")) parts.push(`Recent Echocardiography${sentenceDate(value("echoDate"))} revealed ${resultSentence(value("echoResult"))}`); if (checked("includeCoronaryCTA") && value("coronaryCTAResult")) parts.push(`Coronary CT angiography${sentenceDate(value("coronaryCTADate"))} disclosed ${resultSentence(value("coronaryCTAResult"))}`); return parts.length ? `During follow-up, ${parts.join(" ")}` : "" }
+            function buildReferencePhrases() { return [{ label: "初始症狀描述", text: CAD_SYMPTOM_PHRASE }, { label: "來院檢查", text: `Due to the above symptoms, he was referred to ${value("hospitalName")} for further check-up.` }, { label: "檢查結果", text: buildCadCheckupPhrase() }, { label: "Medical treatment", text: CAD_MEDICATION_PHRASE }, { label: "SDM", text: CONSENT_PHRASE }, { label: "入院", text: `This time, he was admitted on ${value("admissionDate")} for ${value("admissionReason")}.` }, { label: "入院症狀", text: ON_ADMISSION_PHRASE }, { label: "入院PE", text: PHYSICAL_EXAM_PHRASE }] }
+            function renderReferencePhraseButtons() { const c = el("referencePhraseButtons"); if (!c) return; c.innerHTML = ""; buildReferencePhrases().forEach(item => { if (!item.text) return; const b = document.createElement("button"); b.type = "button"; b.className = "paragraph-button"; b.innerHTML = `<small>${escapeHtml(item.label)}</small>${escapeHtml(previewText(item.text))}`; b.addEventListener("click", () => appendParagraph("piStory", item.text, "pi")); c.appendChild(b) }) }
+
+            function renderScores() { initScoreState(); const wrap = el("scoreSystems"); if (!wrap) return; wrap.innerHTML = ""; Object.entries(scoringSystems).forEach(([key, sys]) => { const section = document.createElement("div"); section.className = "section"; const include = state.scores[key].include; const pill = sys.type === "binary" && sys.scoreLabel ? `${sys.scoreLabel}: ${scoreValue(key)}` : sys.type === "choice" && state.scores[key].choice ? `${sys.scoreLabel}: ${state.scores[key].choice}` : ""; const header = document.createElement("div"); header.className = "score-header"; header.innerHTML = `<label style="font-size:14px;color:var(--text);margin:0"><input type="checkbox" ${include ? "checked" : ""} style="width:auto;margin-right:8px">[${sys.title}]</label>${pill ? `<span class="score-pill">${pill}</span>` : ""}`; header.querySelector("input").addEventListener("change", e => setScoreInclude(key, e.target.checked)); section.appendChild(header); const panel = document.createElement("div"); panel.className = `score-panel ${include ? "" : "hidden"}`; if (sys.type === "binary") { panel.className += " grid-4"; sys.items.forEach(item => { const label = item[0], score = item[1], shown = item[2] || label, selected = state.scores[key].items[label]; const card = document.createElement("div"); card.className = "risk-item"; card.innerHTML = `<label>${shown}${sys.scoreLabel ? ` (${score > 0 ? "+" + score : score})` : ""}</label><div class="risk-buttons"><button type="button" class="small-btn ${selected ? "yes-selected" : ""}" data-v="yes">+</button><button type="button" class="small-btn ${!selected ? "no-selected" : ""}" data-v="no">−</button></div>`; card.querySelector('[data-v="yes"]').addEventListener("click", () => setBinaryScore(key, label, true)); card.querySelector('[data-v="no"]').addEventListener("click", () => setBinaryScore(key, label, false)); panel.appendChild(card) }) } else { const choices = document.createElement("div"); choices.className = "choice-buttons"; sys.choices.forEach(choice => { const b = document.createElement("button"); b.type = "button"; b.className = `small-btn ${state.scores[key].choice === choice ? "choice-selected" : ""}`; b.textContent = choice; b.addEventListener("click", () => setChoiceScore(key, choice)); choices.appendChild(b) }); panel.appendChild(choices); const desc = document.createElement("div"); desc.className = "hint"; desc.style.marginTop = "10px"; desc.innerHTML = Object.entries(sys.descriptions).map(([g, t]) => `<div>${g}: ${t}</div>`).join(""); panel.appendChild(desc) } section.appendChild(panel); wrap.appendChild(section) }) }
+
+            function insertFamilyPhrase(textarea, phrase) { const start = textarea.selectionStart || 0; const end = textarea.selectionEnd || 0; const current = textarea.value || ""; const before = current.slice(0, start); const after = current.slice(end); const prefix = before && !before.endsWith(" ") && !before.endsWith(",") ? ", " : ""; textarea.value = before + prefix + phrase + after; const pos = (before + prefix + phrase).length; textarea.focus(); textarea.setSelectionRange(pos, pos); state.lastModified = "family"; generateNote() }
+            function renderFamily() { const current = {}; document.querySelectorAll("[data-detail]").forEach(node => current[node.dataset.detail] = node.value); const container = el("familyGrid"); if (!container) return; container.innerHTML = ""; familyItems.forEach(item => { const label = item[0], def = item[1]; if (state.family[label] === undefined) state.family[label] = false; const detail = current[label] !== undefined ? current[label] : def; const card = document.createElement("div"); card.className = "risk-item"; card.innerHTML = `<label>${label}</label><div class="risk-buttons"><button type="button" class="small-btn ${state.family[label] ? "yes-selected" : ""}" data-v="yes">+</button><button type="button" class="small-btn ${!state.family[label] ? "no-selected" : ""}" data-v="no">−</button></div><textarea class="paragraph-control" data-detail="${escapeHtml(label)}" placeholder="details...">${escapeHtml(detail || "")}</textarea><div class="choice-buttons" data-phrase-row="${escapeHtml(label)}"></div>`; card.querySelector('[data-v="yes"]').addEventListener("click", () => setFamily(label, true)); card.querySelector('[data-v="no"]').addEventListener("click", () => setFamily(label, false)); const detailNode = card.querySelector("[data-detail]"); detailNode.addEventListener("input", () => { state.lastModified = "family"; generateNote() }); const phraseRow = card.querySelector("[data-phrase-row]"); familyPhraseOptions.forEach(phrase => { const b = document.createElement("button"); b.type = "button"; b.className = "small-btn"; b.textContent = phrase; b.addEventListener("click", () => insertFamilyPhrase(detailNode, phrase)); phraseRow.appendChild(b) }); container.appendChild(card) }) }
+            function setFamily(label, on) { state.family[label] = on; state.lastModified = "family"; renderFamily(); generateNote() }
+
+            function stripDiagnosisPrefix(text) { return String(text || "").replace(/^\s*#\.\s*/, "").trim() }
+            function formatHistoryLines(text) { const raw = String(text || "").trim(); if (!raw) return ""; const arr = lines(text).map(stripDiagnosisPrefix).filter(Boolean); return arr.length ? arr.join(NL) : "" }
+            function scoreResultText(key) { const sys = scoringSystems[key], s = state.scores[key]; if (!s.include) return ""; if (sys.type === "binary") { const details = sys.items.map(item => `${item[2] || item[0]}${s.items[item[0]] ? "(+)" : "(-)"}`).join(", "); return sys.scoreLabel ? `【${sys.title}】= ${scoreValue(key)}${NL}- ${details}` : `【${sys.title}】${NL}- ${details}` } if (sys.type === "choice") { return s.choice ? `【${sys.title}】= ${s.choice}${NL}- ${s.choice}: ${sys.descriptions[s.choice]}` : `【${sys.title}】${NL}- Not selected` } return "" }
+            function renderTextBlock(block) { const safe = escapeHtml(block.text); return block.key === state.lastModified ? `<strong>${safe}</strong>` : safe }
+            function getEditedOutputText() { const out = el("output"); return out ? out.innerText.trim() : "" }
+            function syncEditedOutputPlainText() { const out = el("output"); if (out) out.dataset.plainText = getEditedOutputText() }
+            function setFieldFromRightPanel(id, text) { const node = el(id); if (node && node.value !== text) node.value = text }
+            function extractBetween(text, start, end) { const i = text.indexOf(start); if (i === -1) return null; const s = i + start.length; const j = end ? text.indexOf(end, s) : -1; return (j === -1 ? text.slice(s) : text.slice(s, j)).trim() }
+            function syncRightPanelEditsToLeftFields() { const text = getEditedOutputText(); const active = extractBetween(text, "[Active]", "[Underlying]"); if (active !== null) setFieldFromRightPanel("activeDiseaseText", active); const upi = extractBetween(text, "[Underlying]", "【Past Medical History】"); if (upi !== null) { const parts = upi.split(NL + NL); setFieldFromRightPanel("underlyingDiseaseText", (parts.shift() || "").trim()); setFieldFromRightPanel("piStory", parts.join(NL + NL).trim()) } }
+            function insertHighlightedManualText(text) { const sel = window.getSelection(); if (!sel || sel.rangeCount === 0) return false; const out = el("output"); if (!out || !out.contains(sel.anchorNode)) return false; const range = sel.getRangeAt(0); range.deleteContents(); const span = document.createElement("span"); span.className = "manual-edit"; span.textContent = text; range.insertNode(span); range.setStartAfter(span); range.setEndAfter(span); sel.removeAllRanges(); sel.addRange(range); state.lastModified = "manualResult"; syncEditedOutputPlainText(); syncRightPanelEditsToLeftFields(); return true }
+            function handleManualOutputBeforeInput(e) { if (state.isRendering) return; if (e.inputType === "insertText") { e.preventDefault(); insertHighlightedManualText(e.data || "") } else if (e.inputType === "insertParagraph") { e.preventDefault(); insertHighlightedManualText(NL) } else if (e.inputType === "insertFromPaste") { e.preventDefault(); insertHighlightedManualText(e.clipboardData ? e.clipboardData.getData("text/plain") : "") } }
+            function getFamilyDetail(label) { const nodes = document.querySelectorAll("[data-detail]"); for (const node of nodes) { if (node.dataset.detail === label) return node.value.trim() } return "" }
+
+            function generateNote() { if (state.isRendering) return; state.isRendering = true; try { updateProcedureConditional(); const includedScores = Object.keys(scoringSystems).map(scoreResultText).filter(Boolean).join(NL + NL); const familyText = familyItems.map(item => { const label = item[0], pos = state.family[label], detail = getFamilyDetail(label); return `${label}(${pos ? "+" : "-"}${pos && detail ? ", " + detail : ""})` }).join(", "); const blocks = [{ key: "informant", text: `- Informant: ${value("informant")}` }, { key: "chiefComplaint", text: `- Chief complaint: ${value("chiefComplaint")}` }, { key: "writer", text: `${NL}Taken by ${value("writer")}` }, { key: "demographics", text: `${NL}【Present Illness】${NL}This is a ${value("age")}-year-old ${value("sex")}, iADL/ADL ${value("iadl")}, with a past medical history of:` }, { key: "active", text: `${NL}[Active]${NL}${value("activeDiseaseText")}` }, { key: "underlying", text: `${NL}[Underlying]${NL}${value("underlyingDiseaseText")}` }, { key: "pi", text: value("piStory") ? `${NL}${value("piStory")}` : "" }, { key: "pmh", text: `${NL}【Past Medical History】${NL}- As mentioned above` }, { key: "scores", text: includedScores ? `${NL}${includedScores}` : "" }, { key: "surgical", text: `${NL}【Past Surgical History】${formatHistoryLines(value("surgicalHistory")) ? NL + formatHistoryLines(value("surgicalHistory")) : ""}` }, { key: "hospitalization", text: `${NL}【Hospitalization History】${formatHistoryLines(value("hospitalization")) ? NL + formatHistoryLines(value("hospitalization")) : ""}` }, { key: "medication", text: `${NL}【Current Medication】${NL}- 台大醫院:${NL}${value("medNtuh")}${NL}- Other:${value("medOther")}${NL}- 中草藥:${value("herb")}${NL}- 保健食品:${value("supplement")}` }, { key: "allergy", text: `${NL}【Allergic History】${NL}- Medication allergy:${NL}${value("drugAllergy")}${NL}- Food allergy:${value("foodAllergy")}${NL}- Medical device ADR: ${value("deviceAdr")}` }, { key: "family", text: `${NL}【Family History】${NL}- ${familyText}` }, { key: "social", text: `${NL}【Personal and Social History】${NL}[Habits]${NL}- Alcohol: ${value("alcohol")}${NL}- Betel nuts: ${value("betel")}${NL}- Cigarette: ${value("cigarette")}${NL}- Other: ${value("habitOther")}${NL}${NL}[TOCC]${NL}- Travel history in recent 3 months: ${value("travel")}${NL}- Occupation: ${value("occupation")}${NL}- Contact history: ${value("contact")}${NL}- Cluster history: ${value("cluster")}` }]; const plain = blocks.map(b => b.text).join(NL).replace(/\n{3,}/g, NL + NL).trim(); const html = blocks.map(renderTextBlock).join(NL).replace(/\n{3,}/g, NL + NL).trim(); const out = el("output"); out.dataset.plainText = plain; out.innerHTML = html } finally { state.isRendering = false } }
+
+            function fallbackCopyText(text) { const t = document.createElement("textarea"); t.value = text; t.setAttribute("readonly", ""); t.style.position = "fixed"; t.style.left = "-9999px"; document.body.appendChild(t); t.focus(); t.select(); let ok = false; try { ok = document.execCommand("copy") } catch (e) { ok = false } document.body.removeChild(t); return ok }
+            async function copyNote() { if (!getEditedOutputText()) generateNote(); syncEditedOutputPlainText(); const text = el("output").dataset.plainText; try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); alert("Copied!"); return } } catch (e) { console.warn(e) } alert(fallbackCopyText(text) ? "Copied!" : "Copy failed. Please select the text and copy manually.") }
+            function downloadNote() { if (!getEditedOutputText()) generateNote(); syncEditedOutputPlainText(); const blob = new Blob([el("output").dataset.plainText], { type: "text/plain;charset=utf-8" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "admission-note-cad.txt"; a.click(); URL.revokeObjectURL(url) }
+
+            function resetSample() { const today = todayText(); state.procedure = "CAG +/- PCI"; state.informant = "the patient and the past medical records"; state.chiefComplaint = "other"; state.lastModified = null; el("admissionReason").value = state.procedure; el("writer").value = "M6"; el("informant").value = state.informant; el("chiefComplaint").value = "chest pain, chest tightness for 3 months, for CAG +/- PCI"; el("admissionDate").value = today; el("activeDiseaseText").value = ""; el("underlyingDiseaseText").value = ""; el("piStory").value = ""; el("treadmillDate").value = today; el("echoDate").value = today; el("coronaryCTADate").value = today; el("includeTreadmill").checked = true; el("includeEcho").checked = true; el("includeCoronaryCTA").checked = true; el("treadmillResult").value = DEFAULT_TREADMILL; el("echoResult").value = DEFAULT_ECHO; el("coronaryCTAResult").value = DEFAULT_CCTA; el("deviceAdr").value = "nil"; el("hospitalName").value = "NTUH"; el("surgicalHistory").value = "- appendectomy in 2006"; el("hospitalization").value = ""; el("habitOther").value = "nil"; state.scores = {}; initScoreState(); state.family = { Hypertension: false, Dyslipidemia: false, DM: false, Stroke: false, ACS: false, Malignancy: false, Arrhythmia: false, "Sudden death": false, Other: false }; renderAllChoiceButtons(); updateProcedureConditional(); applyDemographicAutoFactors(); renderScores(); renderFamily(); renderReferencePhraseButtons(); generateNote() }
+
+            function bindLiveInputs() { const inputMap = { age: "demographics", sex: "demographics", iadl: "demographics", admissionDate: "pi", writer: "writer", admissionReason: "pi", informant: "informant", chiefComplaint: "chiefComplaint", activeDiseaseText: "active", underlyingDiseaseText: "underlying", piStory: "pi", hospitalName: "pi", surgicalHistory: "surgical", hospitalization: "hospitalization", medNtuh: "medication", medOther: "medication", herb: "medication", supplement: "medication", drugAllergy: "allergy", foodAllergy: "allergy", deviceAdr: "allergy", habitOther: "social", alcohol: "social", betel: "social", cigarette: "social", travel: "social", occupation: "social", contact: "social", cluster: "social", treadmillDate: "pi", echoDate: "pi", coronaryCTADate: "pi", treadmillResult: "pi", echoResult: "pi", coronaryCTAResult: "pi" }; Object.keys(inputMap).forEach(id => { const node = el(id); if (!node) return; const handler = () => { if (state.syncingFromRight) return; if (id === "admissionReason") { state.procedure = value("admissionReason"); updateProcedureConditional(); renderAllChoiceButtons() } if (id === "age" || id === "sex") { applyDemographicAutoFactors(); renderScores() } state.lastModified = inputMap[id]; renderReferencePhraseButtons(); generateNote() }; node.addEventListener("input", handler); node.addEventListener("change", handler) });["includeTreadmill", "includeEcho", "includeCoronaryCTA"].forEach(id => { el(id).addEventListener("change", () => { state.lastModified = "pi"; generateNote() }) }); el("generateBtn").addEventListener("click", generateNote); el("copyBtn").addEventListener("click", copyNote); el("downloadBtn").addEventListener("click", downloadNote); el("resetBtn").addEventListener("click", resetSample); el("output").addEventListener("beforeinput", handleManualOutputBeforeInput); el("output").addEventListener("input", () => { state.lastModified = "manualResult"; syncEditedOutputPlainText(); state.syncingFromRight = true; syncRightPanelEditsToLeftFields(); state.syncingFromRight = false }) }
+
+            function runTests() { const required = ["activeDiseaseText", "underlyingDiseaseText", "piStory", "familyGrid", "output", "writer", "chiefComplaint", "alcohol", "scoreSystems", "referencePhraseButtons"]; required.forEach(id => console.assert(Boolean(el(id)), `Missing element ${id}`)); console.assert(value("hospitalName") === "NTUH", "Hospital name should default to NTUH"); console.assert(value("activeDiseaseText") === "", "Active Disease should default blank"); console.assert(value("underlyingDiseaseText") === "", "Underlying Disease should default blank"); console.assert(value("piStory") === "", "PI should default blank"); console.assert(value("deviceAdr") === "nil", "Device ADR nil"); console.assert(value("surgicalHistory") === "- appendectomy in 2006", "Surgical history should default to appendectomy phrase"); console.assert(value("hospitalization") === "", "Hospitalization should default blank"); console.assert(formatHistoryLines("") === "", "Blank history output should stay blank"); console.assert(formatHistoryLines("A") === "A", "History output should not auto-add dash"); console.assert(formatHistoryLines("- appendectomy in 2006") === "- appendectomy in 2006", "Manual dash should be preserved"); console.assert(el("output").dataset.plainText.includes(`【Past Surgical History】${NL}- appendectomy in 2006${NL}${NL}【Hospitalization History】`), "Surgical default and hospitalization blank format mismatch"); console.assert(el("output").dataset.plainText.includes("DM(-)"), "Family history DM should default negative"); console.assert(el("output").isContentEditable, "Output editable"); console.assert(el("writer").tagName === "TEXTAREA", "Writer textarea"); console.assert(el("chiefComplaint").tagName === "TEXTAREA", "Chief complaint textarea"); console.assert(el("alcohol").tagName === "TEXTAREA", "Habit fields textarea"); console.assert(buildCadCheckupPhrase().includes("Normal RA/RV size; Good LV contractility"), "Echo semicolon conversion"); const layoutStyle = getComputedStyle(document.querySelector(".app-layout")); console.assert(layoutStyle.display === "grid", "App layout should use CSS grid"); console.assert(getComputedStyle(document.querySelector(".control-panel")).overflowY === "auto", "Left panel should have its own vertical scrollbar"); console.assert(getComputedStyle(el("output")).overflowY === "auto", "Right result should have its own vertical scrollbar"); const htnDetail = document.querySelector('[data-detail="Hypertension"]'); insertFamilyPhrase(htnDetail, "mother"); console.assert(htnDetail.value.includes("mother"), "Family phrase insertion should work"); const sample = ["- Informant: test", "", "【Present Illness】", "This is a 61-year-old male, iADL/ADL independent, with a past medical history of:", "", "[Active]", "#. CAD edited", "", "[Underlying]", "#. HTN edited", "", "PI edited from right panel", "", "【Past Medical History】", "- As mentioned above"].join(NL); el("output").innerText = sample; syncEditedOutputPlainText(); syncRightPanelEditsToLeftFields(); console.assert(value("activeDiseaseText") === "#. CAD edited", "Right Active sync"); console.assert(value("underlyingDiseaseText") === "#. HTN edited", "Right Underlying sync"); console.assert(value("piStory") === "PI edited from right panel", "Right PI sync"); resetSample() }
+
+            function init() { try { renderDiseasePhraseButtons("activePhraseBank", "activeDiseaseText", "active"); renderDiseasePhraseButtons("underlyingPhraseBank", "underlyingDiseaseText", "underlying"); bindLiveInputs(); resetSample(); runTests() } catch (error) { console.error("Admission Note Generator failed to initialize:", error); const fallback = document.createElement("pre"); fallback.style.color = "#ff6b6b"; fallback.style.whiteSpace = "pre-wrap"; fallback.textContent = "Initialization error:" + NL + (error && error.stack ? error.stack : String(error)); document.body.prepend(fallback) } }
+            if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+        })();
+    </script>
+</body>
+
+</html>
